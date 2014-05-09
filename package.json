@@ -1,0 +1,19 @@
+{
+  "name": "brackets-tasks",
+  "version": "0.0.0",
+  "description": "Adds a ui to Brackets for grunt and gulp tasks",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/HalleyInteractive/brackets-tasks.git"
+  },
+  "author": "Halley Interactive",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HalleyInteractive/brackets-tasks/issues"
+  },
+  "homepage": "https://github.com/HalleyInteractive/brackets-tasks"
+}
