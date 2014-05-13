@@ -1,0 +1,19 @@
+#gulp-panel
+{
+	height: 23px;
+	padding-left: 6px;
+}
+
+#gulp-panel .task
+{
+	display:inline;
+	padding: 4px;
+	cursor: pointer;
+	border-right: 1px solid #333;
+	line-height: 23px;
+}
+
+#gulp-panel .task:hover
+{
+	background-color:#CCC;
+}

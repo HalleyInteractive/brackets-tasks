@@ -19,6 +19,9 @@ define(function (require, exports, module)
 	var gulpPanelManager	= null;
 	var gulpTaskButtons		= [];
 
+	// Load stylesheet
+	ExtensionUtils.loadStyleSheet(module, "brackets-tasks.css");
+
 	AppInit.appReady(function ()
 	{
 		console.log("Gulp tasks app ready");
@@ -51,7 +54,7 @@ define(function (require, exports, module)
 				gulpTaskButtons.push(taskButton);
 			}
 			console.log(gulpPanel);
-			gulpPanelManager = PanelManager.createBottomPanel("Gulp tasks", gulpPanel, 50);
+			gulpPanelManager = PanelManager.createBottomPanel("Gulp tasks", gulpPanel, 23 /* height */);
 			gulpPanelManager.show();
 		})
 		.fail(function(err)
