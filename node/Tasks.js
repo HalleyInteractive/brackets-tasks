@@ -2,9 +2,16 @@
 /*global require, exports */
 
 var fs = require('fs');
+
+/* Spawn for the child processes */
+var spawn = require('child_process').spawn;
+
+var gulpTask = null;
+
 var gulpAvailable = false;
 var gulp = null;
 var projectRoot = "";
+
 
 function getGulpTaskList()
 {
@@ -16,6 +23,37 @@ function getGulpTaskList()
 	{
 		console.log("No gulp file found in project directory");
 	}
+}
+
+function runGulpTask(task)
+{
+	console.log("RUN TASK: " + task);
+	console.log("RUN TASK IN: " + projectRoot + 'gulp');
+	gulpTask = spawn(projectRoot, ['gulp', task]); // TODO: Execute gulp task from project root folder
+	console.log("STARTED? ");
+	gulpTask.stdout.on('data', gulpTaskData);
+	gulpTask.stderr.on('data', taskError);
+	gulpTask.on('close', gulpTaskDone);
+}
+
+function gulpTaskData(data)
+{
+	var output = data.toString("utf-8").match(/[^\r\n]+/g);
+	for(var i = 0; i < output.length; i++)
+	{
+		var outputLine = output[i];
+		console.log(outputLine);
+	}
+}
+
+function gulpTaskDone(code)
+{
+	console.log("Task Done: " + code);
+}
+
+function taskError(data)
+{
+	console.log("Task error: " + data.toString('utf-8'));
 }
 
 function setProjectRoot(projectRootFolder)
@@ -52,6 +90,17 @@ function init(domainManager)
 		false,					// this command is synchronous in Node
 		"This sets the project root variable",
 		[{name:"path", type:"String", description:"Full path the the project root folder"}],
+		[]
+	);
+
+	domainManager.registerCommand
+	(
+		"tasks",				// domain name
+		"runGulpTask",			// command name
+		runGulpTask,			// command handler function
+		false,					// this command is synchronous in Node
+		"Executes a gulp task",
+		[{name:"task", type:"String", description:"Name of the task that should be fired"}],
 		[]
 	);
 }

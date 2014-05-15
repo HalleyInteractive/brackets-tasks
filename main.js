@@ -49,6 +49,7 @@ define(function (require, exports, module)
 			for(var task in tasks)
 			{
 				var taskButton = $("<div class='task'>" + task + "</div>");
+				taskButton.click(gulpTaskClickHandler);
 				console.log(taskButton);
 				gulpPanel.append(taskButton);
 				gulpTaskButtons.push(taskButton);
@@ -61,6 +62,12 @@ define(function (require, exports, module)
 		{
 			console.error("Error loading gulp tasks", err);
 		});
+	}
+
+	function gulpTaskClickHandler()
+	{
+		console.log("RUN: " + $(this).text());
+		tasksDomain.exec("runGulpTask", $(this).text());
 	}
 
 });
