@@ -2,9 +2,7 @@
 /*global require, exports */
 
 var fs = require('fs');
-
-/* Spawn for the child processes */
-var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 
 var gulpTask = null;
 
@@ -29,11 +27,17 @@ function runGulpTask(task)
 {
 	console.log("RUN TASK: " + task);
 	console.log("RUN TASK IN: " + projectRoot + 'gulp');
-	gulpTask = spawn(projectRoot, ['gulp', task]); // TODO: Execute gulp task from project root folder
-	console.log("STARTED? ");
-	gulpTask.stdout.on('data', gulpTaskData);
-	gulpTask.stderr.on('data', taskError);
-	gulpTask.on('close', gulpTaskDone);
+
+	process.chdir(projectRoot);
+	console.log("PROCESS");
+
+    var gulpTask = exec('gulp ' + task);
+
+	gulpTask.stdout.on("data", gulpTaskData);
+	gulpTask.stdout.on("close", gulpTaskDone);
+	gulpTask.stdout.on("error", taskError);
+	return true;
+
 }
 
 function gulpTaskData(data)

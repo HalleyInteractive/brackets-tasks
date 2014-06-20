@@ -48,7 +48,7 @@ define(function (require, exports, module)
 			gulpPanel = $("<div id='gulp-panel'></div>");
 			for(var task in tasks)
 			{
-				var taskButton = $("<div class='task'>" + task + "</div>");
+				var taskButton = $("<div class='task' data-task='"+task+"'>" + task + "</div>");
 				taskButton.click(gulpTaskClickHandler);
 				console.log(taskButton);
 				gulpPanel.append(taskButton);
@@ -66,8 +66,8 @@ define(function (require, exports, module)
 
 	function gulpTaskClickHandler()
 	{
-		console.log("RUN: " + $(this).text());
-		tasksDomain.exec("runGulpTask", $(this).text());
+		console.log("RUN: " + $(this).data('task'));
+		tasksDomain.exec("runGulpTask", $(this).data('task'));
 	}
 
 });
