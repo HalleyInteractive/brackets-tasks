@@ -37,6 +37,22 @@ define(function (require, exports, module)
 		{
 			console.error("Error setting project root folder", err);
 		});
+
+		$(tasksDomain).on("start", function(event, task)
+		{
+			$("#gulp-panel .task[data-task='"+task+"']")
+			.addClass("active");
+		});
+
+		$(tasksDomain).on("finish", function(event, task)
+		{
+			$("#gulp-panel .task[data-task='"+task+"']")
+			.delay(500)
+			.queue(function(nxt) { $(this).removeClass("active").addClass("finished"); nxt(); })
+			.delay(1000)
+			.queue(function(nxt) { $(this).removeClass("finished"); nxt(); });
+		});
+
     });
 
 	function getGulpTasks()
@@ -66,7 +82,6 @@ define(function (require, exports, module)
 
 	function gulpTaskClickHandler()
 	{
-		console.log("RUN: " + $(this).data('task'));
 		tasksDomain.exec("runGulpTask", $(this).data('task'));
 	}
 

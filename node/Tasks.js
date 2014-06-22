@@ -1,5 +1,5 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global require, exports */
+/*global require, exports, process */
 
 var fs = require('fs');
 var exec = require('child_process').exec;
@@ -10,6 +10,7 @@ var gulpAvailable = false;
 var gulp = null;
 var projectRoot = "";
 
+var _domainManager;
 
 function getGulpTaskList()
 {
@@ -26,27 +27,43 @@ function getGulpTaskList()
 function runGulpTask(task)
 {
 	console.log("RUN TASK: " + task);
-	console.log("RUN TASK IN: " + projectRoot + 'gulp');
 
 	process.chdir(projectRoot);
-	console.log("PROCESS");
-
-    var gulpTask = exec('gulp ' + task);
+    gulpTask = exec('gulp ' + task);
 
 	gulpTask.stdout.on("data", gulpTaskData);
 	gulpTask.stdout.on("close", gulpTaskDone);
 	gulpTask.stdout.on("error", taskError);
-	return true;
 
+	return true;
 }
 
 function gulpTaskData(data)
 {
 	var output = data.toString("utf-8").match(/[^\r\n]+/g);
+	var startRegex = /\[gulp\]\sStarting\s\'([\w-]+)\'/;
+	var finishRegex = /\[gulp\]\sFinished\s\'([\w-]+)\'/;
+
 	for(var i = 0; i < output.length; i++)
 	{
 		var outputLine = output[i];
-		console.log(outputLine);
+		console.log(i + ": ["+outputLine+"]");
+		if(startRegex.test(outputLine))
+		{
+			_domainManager.emitEvent(
+				"tasks",	// Domain
+				"start",	// Event
+				startRegex.exec(outputLine)[1] // Task
+			);
+		}
+		if(finishRegex.test(outputLine))
+		{
+			_domainManager.emitEvent(
+				"tasks",	// Domain
+				"finish",	// Event
+				finishRegex.exec(outputLine)[1] // Task
+			);
+		}
 	}
 }
 
@@ -71,6 +88,7 @@ function setProjectRoot(projectRootFolder)
 function init(domainManager)
 {
 	console.log("Gulp node init");
+	_domainManager = domainManager;
 	if (!domainManager.hasDomain("tasks")) { domainManager.registerDomain("tasks", {major: 0, minor: 1}); }
 
 	domainManager.registerCommand
@@ -106,6 +124,32 @@ function init(domainManager)
 		"Executes a gulp task",
 		[{name:"task", type:"String", description:"Name of the task that should be fired"}],
 		[]
+	);
+
+	domainManager.registerEvent
+	(
+		"tasks",
+		"start",
+		[
+			{
+				name: "task",
+				type: "string",
+				description: "Name of the task being started by Gulp"
+			}
+		]
+	);
+
+	domainManager.registerEvent
+	(
+		"tasks",
+		"finish",
+		[
+			{
+				name: "task",
+				type: "string",
+				description: "Name of the task that is finished by Gulp"
+			}
+		]
 	);
 }
 

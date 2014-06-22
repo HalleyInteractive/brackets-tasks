@@ -17,3 +17,14 @@
 {
 	background-color:#CCC;
 }
+
+#gulp-panel .task.active
+{
+	background-color: #EBA744;
+}
+
+#gulp-panel .task.finished
+{
+	background-color: #448027;
+	color: #FFF;
+}
