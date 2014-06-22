@@ -1,16 +1,15 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global require, exports, process */
+/*global require, exports */
 
 var fs = require('fs');
-var exec = require('child_process').exec;
-
-var gulpTask = null;
 
 var gulpAvailable = false;
 var gulp = null;
 var projectRoot = "";
 
 var _domainManager;
+
+var GulpTask = require('./GulpTask');
 
 function getGulpTaskList()
 {
@@ -28,63 +27,10 @@ function runGulpTask(task)
 {
 	console.log("RUN TASK: " + task);
 
-	process.chdir(projectRoot);
-    gulpTask = exec('gulp ' + task);
-
-	gulpTask.stdout.on("data", gulpTaskData);
-	gulpTask.stdout.on("close", gulpTaskDone);
-	gulpTask.stdout.on("error", taskError);
+	var gulpTask = new GulpTask();
+	gulpTask.start(projectRoot, task, _domainManager);
 
 	return true;
-}
-
-function gulpTaskData(data)
-{
-	var output = data.toString("utf-8").match(/[^\r\n]+/g);
-	var startRegex = /\[gulp\]\sStarting\s\'([\w-]+)\'/;
-	var finishRegex = /\[gulp\]\sFinished\s\'([\w-]+)\'/;
-
-	for(var i = 0; i < output.length; i++)
-	{
-		var outputLine = output[i];
-		console.log(i + ": ["+outputLine+"]");
-		if(startRegex.test(outputLine))
-		{
-			_domainManager.emitEvent(
-				"tasks",	// Domain
-				"start",	// Event
-				startRegex.exec(outputLine)[1] // Task
-			);
-		}
-		if(finishRegex.test(outputLine))
-		{
-			_domainManager.emitEvent(
-				"tasks",	// Domain
-				"finish",	// Event
-				finishRegex.exec(outputLine)[1] // Task
-			);
-		}
-	}
-}
-
-function gulpTaskDone(code)
-{
-	console.log("Task Done: " + code);
-	_domainManager.emitEvent(
-		"tasks",	// Domain
-		"done",		// Event
-		''			// Task
-	);
-}
-
-function taskError(data)
-{
-	console.log("Task error: " + data.toString('utf-8'));
-	_domainManager.emitEvent(
-		"tasks",	// Domain
-		"error",	// Event
-		''			// Task
-	);
 }
 
 function setProjectRoot(projectRootFolder)
@@ -97,46 +43,60 @@ function setProjectRoot(projectRootFolder)
 
 function init(domainManager)
 {
-	console.log("Gulp node init");
 	_domainManager = domainManager;
-	if (!domainManager.hasDomain("tasks")) { domainManager.registerDomain("tasks", {major: 0, minor: 1}); }
-
-	domainManager.registerCommand
+	if (!_domainManager.hasDomain("tasks")) { _domainManager.registerDomain("tasks", {major: 0, minor: 1}); }
+	_domainManager.registerCommand
 	(
-		"tasks",				// domain name
-		"getGulpTaskList",		// command name
-		getGulpTaskList,		// command handler function
-		false,					// this command is synchronous in Node
+		"tasks",					// domain name
+		"getGulpTaskList",			// command name
+		getGulpTaskList,	// command handler function
+		false,						// this command is synchronous in Node
 		"Returns a list of all found gulp tasks",
 		[],
-		[{name: "tasks", // return values
-		type: "Object",
-		description: "Lists of gulp tasks"}]
+		[
+			{
+				name: "tasks", 		// return values
+				type: "Object",
+				description: "Lists of gulp tasks"
+			}
+		]
 	);
 
-	domainManager.registerCommand
+	_domainManager.registerCommand
 	(
-		"tasks",				// domain name
-		"setProjectRoot",		// command name
-		setProjectRoot,			// command handler function
-		false,					// this command is synchronous in Node
+		"tasks",					// domain name
+		"setProjectRoot",			// command name
+		setProjectRoot,	// command handler function
+		false,						// this command is synchronous in Node
 		"This sets the project root variable",
-		[{name:"path", type:"String", description:"Full path the the project root folder"}],
+		[
+			{
+				name:"path",
+				type:"String",
+				description:"Full path the the project root folder"
+			}
+		],
 		[]
 	);
 
-	domainManager.registerCommand
+	_domainManager.registerCommand
 	(
 		"tasks",				// domain name
 		"runGulpTask",			// command name
-		runGulpTask,			// command handler function
+		runGulpTask,	// command handler function
 		false,					// this command is synchronous in Node
 		"Executes a gulp task",
-		[{name:"task", type:"String", description:"Name of the task that should be fired"}],
+		[
+			{
+				name:"task",
+				type:"String",
+				description:"Name of the task that should be fired"
+			}
+		],
 		[]
 	);
 
-	domainManager.registerEvent
+	_domainManager.registerEvent
 	(
 		"tasks",
 		"start",
@@ -149,7 +109,7 @@ function init(domainManager)
 		]
 	);
 
-	domainManager.registerEvent
+	_domainManager.registerEvent
 	(
 		"tasks",
 		"finish",
@@ -162,7 +122,7 @@ function init(domainManager)
 		]
 	);
 
-	domainManager.registerEvent
+	_domainManager.registerEvent
 	(
 		"tasks",
 		"done",
@@ -175,7 +135,7 @@ function init(domainManager)
 		]
 	);
 
-	domainManager.registerEvent
+	_domainManager.registerEvent
 	(
 		"tasks",
 		"error",
