@@ -70,11 +70,21 @@ function gulpTaskData(data)
 function gulpTaskDone(code)
 {
 	console.log("Task Done: " + code);
+	_domainManager.emitEvent(
+		"tasks",	// Domain
+		"done",		// Event
+		''			// Task
+	);
 }
 
 function taskError(data)
 {
 	console.log("Task error: " + data.toString('utf-8'));
+	_domainManager.emitEvent(
+		"tasks",	// Domain
+		"error",	// Event
+		''			// Task
+	);
 }
 
 function setProjectRoot(projectRootFolder)
@@ -148,6 +158,32 @@ function init(domainManager)
 				name: "task",
 				type: "string",
 				description: "Name of the task that is finished by Gulp"
+			}
+		]
+	);
+
+	domainManager.registerEvent
+	(
+		"tasks",
+		"done",
+		[
+			{
+				name: "task",
+				type: "string",
+				description: "Name of the task that is completely done"
+			}
+		]
+	);
+
+	domainManager.registerEvent
+	(
+		"tasks",
+		"error",
+		[
+			{
+				name: "task",
+				type: "string",
+				description: "Name of the task that has an error"
 			}
 		]
 	);
