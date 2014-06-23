@@ -1,192 +1,80 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global require, exports, process */
+/*global require, exports */
 
 var fs = require('fs');
-var exec = require('child_process').exec;
 
-var gulpTask = null;
+var GulpTask = require('./GulpTask');
 
-var gulpAvailable = false;
-var gulp = null;
-var projectRoot = "";
+var projectPath = "";
+var gulpTaskList = null;
+var gruntTaskList = null;
 
-var _domainManager;
+var runningTasks = [];
 
-function getGulpTaskList()
+/**
+* getTaskList
+* Searches for gulp and grunt tasks in the project folder
+* @return taskList Object List of available grunt and gulp tasks
+*/
+function getTaskList()
 {
-	if(gulpAvailable)
-	{
-		console.log("Returning tasks for: " + projectRoot);
-		return gulp.tasks;
-	} else
-	{
-		console.log("No gulp file found in project directory");
-	}
+	var gulpAvailable = fs.existsSync(projectPath + 'gulpfile.js');
+	var gulpFile = gulpAvailable ? require(projectPath + 'gulpfile.js') : null;
+	gulpTaskList = gulpFile !== null ? gulpFile.tasks : null;
+
+	var taskList = {
+		gulp: gulpTaskList,
+		grunt: gruntTaskList
+	};
+
+	return taskList;
 }
 
-function runGulpTask(task)
+/**
+* setProjectPath
+* Used to the the path of the current project from the user
+* This is the path from where tasks are found and executed
+* @param path String Full path to the current project folder
+*/
+function setProjectPath(path)
 {
-	console.log("RUN TASK: " + task);
-
-	process.chdir(projectRoot);
-    gulpTask = exec('gulp ' + task);
-
-	gulpTask.stdout.on("data", gulpTaskData);
-	gulpTask.stdout.on("close", gulpTaskDone);
-	gulpTask.stdout.on("error", taskError);
-
-	return true;
+	console.log("SET PATH TO: " + path);
+	projectPath = path;
 }
 
-function gulpTaskData(data)
+/**
+* runTask
+* Executes a task
+* @param task String the task name
+* @param type String gulp or grunt
+*/
+function runTask(task, type)
 {
-	var output = data.toString("utf-8").match(/[^\r\n]+/g);
-	var startRegex = /\[gulp\]\sStarting\s\'([\w-]+)\'/;
-	var finishRegex = /\[gulp\]\sFinished\s\'([\w-]+)\'/;
-
-	for(var i = 0; i < output.length; i++)
-	{
-		var outputLine = output[i];
-		console.log(i + ": ["+outputLine+"]");
-		if(startRegex.test(outputLine))
-		{
-			_domainManager.emitEvent(
-				"tasks",	// Domain
-				"start",	// Event
-				startRegex.exec(outputLine)[1] // Task
-			);
-		}
-		if(finishRegex.test(outputLine))
-		{
-			_domainManager.emitEvent(
-				"tasks",	// Domain
-				"finish",	// Event
-				finishRegex.exec(outputLine)[1] // Task
-			);
-		}
-	}
+	var gulpTask = new GulpTask();
+	runningTasks.push(gulpTask);
+	gulpTask.task = 'test-task';
+	gulpTask.projectPath = projectPath;
+	gulpTask.start();
 }
 
-function gulpTaskDone(code)
-{
-	console.log("Task Done: " + code);
-	_domainManager.emitEvent(
-		"tasks",	// Domain
-		"done",		// Event
-		''			// Task
-	);
-}
-
-function taskError(data)
-{
-	console.log("Task error: " + data.toString('utf-8'));
-	_domainManager.emitEvent(
-		"tasks",	// Domain
-		"error",	// Event
-		''			// Task
-	);
-}
-
-function setProjectRoot(projectRootFolder)
-{
-	console.log("Setting project root folder to: " + projectRootFolder);
-	projectRoot = projectRootFolder;
-	gulpAvailable = fs.existsSync(projectRoot + 'gulpfile.js');
-	gulp = gulpAvailable ? require(projectRoot + 'gulpfile.js') : null;
-}
-
+/**
+* init
+* Registers all commands and events
+*/
 function init(domainManager)
 {
-	console.log("Gulp node init");
-	_domainManager = domainManager;
 	if (!domainManager.hasDomain("tasks")) { domainManager.registerDomain("tasks", {major: 0, minor: 1}); }
 
-	domainManager.registerCommand
-	(
-		"tasks",				// domain name
-		"getGulpTaskList",		// command name
-		getGulpTaskList,		// command handler function
-		false,					// this command is synchronous in Node
-		"Returns a list of all found gulp tasks",
-		[],
-		[{name: "tasks", // return values
-		type: "Object",
-		description: "Lists of gulp tasks"}]
-	);
+	// Register available commands
+	domainManager.registerCommand('tasks', 'setProjectPath', setProjectPath, false);
+	domainManager.registerCommand('tasks', 'getTaskList', getTaskList, false);
+	domainManager.registerCommand('tasks', 'runTask', runTask, false);
 
-	domainManager.registerCommand
-	(
-		"tasks",				// domain name
-		"setProjectRoot",		// command name
-		setProjectRoot,			// command handler function
-		false,					// this command is synchronous in Node
-		"This sets the project root variable",
-		[{name:"path", type:"String", description:"Full path the the project root folder"}],
-		[]
-	);
-
-	domainManager.registerCommand
-	(
-		"tasks",				// domain name
-		"runGulpTask",			// command name
-		runGulpTask,			// command handler function
-		false,					// this command is synchronous in Node
-		"Executes a gulp task",
-		[{name:"task", type:"String", description:"Name of the task that should be fired"}],
-		[]
-	);
-
-	domainManager.registerEvent
-	(
-		"tasks",
-		"start",
-		[
-			{
-				name: "task",
-				type: "string",
-				description: "Name of the task being started by Gulp"
-			}
-		]
-	);
-
-	domainManager.registerEvent
-	(
-		"tasks",
-		"finish",
-		[
-			{
-				name: "task",
-				type: "string",
-				description: "Name of the task that is finished by Gulp"
-			}
-		]
-	);
-
-	domainManager.registerEvent
-	(
-		"tasks",
-		"done",
-		[
-			{
-				name: "task",
-				type: "string",
-				description: "Name of the task that is completely done"
-			}
-		]
-	);
-
-	domainManager.registerEvent
-	(
-		"tasks",
-		"error",
-		[
-			{
-				name: "task",
-				type: "string",
-				description: "Name of the task that has an error"
-			}
-		]
-	);
+	// Register available events
+	domainManager.registerEvent('tasks', 'start');
+	domainManager.registerEvent('tasks', 'finish');
+	domainManager.registerEvent('tasks', 'done');
+	domainManager.registerEvent('tasks', 'error');
 }
 
 exports.init = init;
