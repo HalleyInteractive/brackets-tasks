@@ -1,57 +1,76 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global require, module, process */
+/*global require, exports, process */
 
-function GulpTask()
+var exec = require('child_process').exec;
+var task = '';
+var projectPath = '';
+
+function start(tsk, prPth)
 {
+	task = tsk;
+	projectPath = prPth;
 
-	this.scope = this;
-	this.exec = require('child_process').exec;
-	this.task = '';
-	this.projectPath = '';
+	console.log("START TASK: " + task);
+	console.log("START IN: " + projectPath);
 
-	this.start = function()
-	{
-		process.chdir(this.scope.projectPath);
-		var gulpTask = this.scope.exec('gulp ' + this.scope.task);
+	process.chdir(projectPath);
 
-		gulpTask.stdout.on("data", this.scope.onData);//.bind(this.scope);
-		gulpTask.stdout.on("close", this.scope.onClose);//.bind(this);
-		gulpTask.stdout.on("error", this.scope.onError);//.bind(this.scope);
-	};
+	var gulpTask = exec('gulp ' + task);
 
-	this.kill = function()
-	{
-		// TODO: Kill process
-	};
-
-	this.onData = function()
-	{
-
-	};
-
-	this.onStart = function()
-	{
-
-	};
-
-	this.onFinish = function()
-	{
-
-	};
-
-	this.onClose = function()
-	{
-		// Empty Close Handler
-		console.log("On Close Handler");
-		console.log(this.scope);
-		console.log("JOE");
-	};
-
-	this.onError = function()
-	{
-
-	};
-
+	gulpTask.stdout.on("data", onDataHandler);
+	gulpTask.stdout.on("close", onCloseHandler);
+	gulpTask.stdout.on("error", onErrorHandler);
 }
 
-module.exports = GulpTask;
+function kill()
+{
+	// TODO: Kill process
+}
+
+function onDataHandler(data)
+{
+	var output = data.toString("utf-8").match(/[^\r\n]+/g);
+	var startRegex = /\[gulp\]\sStarting\s\'([\w-]+)\'/;
+	var finishRegex = /\[gulp\]\sFinished\s\'([\w-]+)\'/;
+
+	for(var i = 0; i < output.length; i++)
+	{
+		var outputLine = output[i];
+		console.log(i + ": ["+outputLine+"]");
+
+		if(startRegex.test(outputLine))
+		{
+			exports.onStart(startRegex.exec(outputLine)[1]);
+		}
+		if(finishRegex.test(outputLine))
+		{
+			exports.onFinish(finishRegex.exec(outputLine)[1]);
+		}
+	}
+}
+
+function onCloseHandler()
+{
+	exports.onClose(task);
+}
+
+function onErrorHandler()
+{
+	exports.onError(task);
+}
+
+function onStart(task) { }
+
+function onFinish(task) { }
+
+function onClose(task) { }
+
+function onError(task) { }
+
+exports.start = start;
+exports.kill = kill;
+
+exports.onStart = onStart;
+exports.onFinish = onFinish;
+exports.onClose = onClose;
+exports.onError = onError;

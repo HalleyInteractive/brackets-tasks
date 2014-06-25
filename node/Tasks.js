@@ -3,13 +3,14 @@
 
 var fs = require('fs');
 
-var GulpTask = require('./GulpTask');
+//var GulpTask = require('./GulpTask');
 
 var projectPath = "";
 var gulpTaskList = null;
 var gruntTaskList = null;
 
 var runningTasks = [];
+var domainManager = null;
 
 /**
 * getTaskList
@@ -50,19 +51,46 @@ function setProjectPath(path)
 */
 function runTask(task, type)
 {
-	var gulpTask = new GulpTask();
+	var gulpTask = require('./GulpTask');
+
 	runningTasks.push(gulpTask);
+
 	gulpTask.task = 'test-task';
 	gulpTask.projectPath = projectPath;
-	gulpTask.start();
+	gulpTask.onStart = onStart;
+	gulpTask.onFinish = onFinish;
+	gulpTask.onClose = onClose;
+	gulpTask.onError = onError;
+	gulpTask.start('test-task', projectPath);
+}
+
+function onStart(task)
+{
+	domainManager.emitEvent("tasks", "start", task);
+}
+
+function onFinish(task)
+{
+	domainManager.emitEvent("tasks", "finish", task);
+}
+
+function onClose(task)
+{
+	domainManager.emitEvent("tasks", "close", task);
+}
+
+function onError(task)
+{
+	domainManager.emitEvent("tasks", "error", task);
 }
 
 /**
 * init
 * Registers all commands and events
 */
-function init(domainManager)
+function init(_domainManager)
 {
+	domainManager = _domainManager;
 	if (!domainManager.hasDomain("tasks")) { domainManager.registerDomain("tasks", {major: 0, minor: 1}); }
 
 	// Register available commands
@@ -73,7 +101,7 @@ function init(domainManager)
 	// Register available events
 	domainManager.registerEvent('tasks', 'start');
 	domainManager.registerEvent('tasks', 'finish');
-	domainManager.registerEvent('tasks', 'done');
+	domainManager.registerEvent('tasks', 'close');
 	domainManager.registerEvent('tasks', 'error');
 }
 

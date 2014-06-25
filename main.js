@@ -23,6 +23,11 @@ define(function (require, exports, module)
 	function init()
 	{
 		tasksDomain = new NodeDomain("tasks", ExtensionUtils.getModulePath(module, "node/Tasks"));
+		$(tasksDomain).on("start", function(event, task){ console.log("START: " + task); });
+		$(tasksDomain).on("finish", function(event, task){ console.log("FINISH: " + task); });
+		$(tasksDomain).on("close", function(event, task){ console.log("CLOSE: " + task); });
+		$(tasksDomain).on("error", function(event, task){ console.log("ERROR: " + task); });
+
 		$(ProjectManager).on("projectOpen", function()
 		{
 			cleanUpTasks();
