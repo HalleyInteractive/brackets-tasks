@@ -1,3 +1,8 @@
+#task-panel
+{
+	padding: 10px;
+}
+
 #task-panel .task.btn-default
 {
 	transition: background-color 200ms linear;
@@ -35,6 +40,11 @@
 #task-panel .task.btn-default.task-error
 {
 	background-color: #fc3838;
+}
+
+#task-panel #task-list
+{
+	margin-bottom: 5px;
 }
 
 #task-panel #task-log

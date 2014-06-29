@@ -72,9 +72,9 @@ define(function (require, exports, module)
 		.addClass('task-open');
 	}
 
-	function taskOnLogHandler(message)
+	function taskOnLogHandler(event, message)
 	{
-		$("#task-panel #task-log").append(message + "<br />");
+		$("#task-panel #task-log").prepend(message + "<br />");
 	}
 
 	function taskOnStartHandler(event, task)
