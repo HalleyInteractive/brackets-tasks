@@ -1,15 +1,22 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global require, exports, $ */
 
+// File system handle
 var fs = require('fs');
 
-//var GulpTask = require('./GulpTask');
-
+// Path of the current user project folder
 var projectPath = "";
+
+// List of tasks from the gulpfile
 var gulpTaskList = null;
+
+// List of tasks from the gruntfile
 var gruntTaskList = null;
 
+// Curent running tasks
 var runningTasks = [];
+
+// Node domain manager
 var domainManager = null;
 
 /**
@@ -46,7 +53,6 @@ function getTaskList()
 */
 function setProjectPath(path)
 {
-	console.log("SET PATH TO: " + path);
 	projectPath = path;
 }
 
@@ -72,26 +78,51 @@ function runTask(task, type)
 	gulpTask.start(task, projectPath);
 }
 
+/**
+* Emits the log event in the task domain
+* @method onLog
+* @param message {String} Output line from the task process
+*/
 function onLog(message)
 {
 	domainManager.emitEvent("tasks", "log", message);
 }
 
+/**
+* Emits the start event of a task
+* @method onStart
+* @param task {String} Name of the task
+*/
 function onStart(task)
 {
 	domainManager.emitEvent("tasks", "start", task);
 }
 
+/**
+* Emits the finish event of a task
+* @method onFinish
+* @param task {String} Name of the task
+*/
 function onFinish(task)
 {
 	domainManager.emitEvent("tasks", "finish", task);
 }
 
+/**
+* Emits the close event of a task
+* @method onClose
+* @param task {String} Name of the task
+*/
 function onClose(task)
 {
 	domainManager.emitEvent("tasks", "close", task);
 }
 
+/**
+* Emits the error event of a task
+* @method onError
+* @param task {String} Name of the task
+*/
 function onError(task)
 {
 	domainManager.emitEvent("tasks", "error", task);
@@ -119,4 +150,5 @@ function init(_domainManager)
 	domainManager.registerEvent('tasks', 'error');
 }
 
+// Export the init function
 exports.init = init;

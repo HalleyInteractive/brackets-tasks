@@ -24,6 +24,10 @@ define(function (require, exports, module)
 	ExtensionUtils.loadStyleSheet(module, "css/brackets-tasks.css");
 	AppInit.appReady(init);
 
+	/**
+	* Initialise the application, set up node domain and listeners
+	* @method init
+	*/
 	function init()
 	{
 		tasksDomain = new NodeDomain("tasks", ExtensionUtils.getModulePath(module, "node/Tasks"));
@@ -46,6 +50,10 @@ define(function (require, exports, module)
 		initTasks();
 	}
 
+	/**
+	* Gets the tasklist from the current project and sets up the buttons in the panel
+	* @method initTasks
+	*/
 	function initTasks()
 	{
 		tasksDomain.exec("setProjectPath", ProjectManager.getProjectRoot().fullPath);
@@ -64,6 +72,11 @@ define(function (require, exports, module)
 		});
 	}
 
+	/**
+	* Fires after user clicks a task button
+	* Starts the task in node
+	* @method taskButtonClickHandler
+	*/
 	function taskButtonClickHandler()
 	{
 		var task = $(this).data('task');
@@ -72,17 +85,36 @@ define(function (require, exports, module)
 		.addClass('task-open');
 	}
 
+	/**
+	* Event handler for every console line the task outputs
+	* @method taskOnLogHandler
+	* @param event {Object} Node event
+	* @param message {String} line that is outputed in the console
+	*/
 	function taskOnLogHandler(event, message)
 	{
 		$("#task-panel #task-log").prepend(message + "<br />");
 	}
 
+	/**
+	* Event handler for when a specific task starts
+	* This can also be started by another task
+	* @method taskOnStartHandler
+	* @param event {Object} Node event
+	* @param task {String} Name of the task that is starting
+	*/
 	function taskOnStartHandler(event, task)
 	{
 		$("#task-panel .task[data-task='"+task+"']")
 		.addClass('task-start');
 	}
 
+	/**
+	* Event handler for when a specific task is finished
+	* @method taskOnFinishHandler
+	* @param event {Object} Node event
+	* @param task {String} Name of the task that is finished
+	*/
 	function taskOnFinishHandler(event, task)
 	{
 		$("#task-panel .task[data-task='"+task+"']")
@@ -97,6 +129,12 @@ define(function (require, exports, module)
 		});
 	}
 
+	/**
+	* Event handler for when a task has completed and the process exits
+	* @method taskOnCloseHandler
+	* @param event {Object} Node event
+	* @param task {String} Name of the task that is completed
+	*/
 	function taskOnCloseHandler(event, task)
 	{
 		$("#task-panel .task[data-task='"+task+"']")
@@ -111,6 +149,12 @@ define(function (require, exports, module)
 		});
 	}
 
+	/**
+	* Event handler for when a task throws an error
+	* @method taskOnErrorHandler
+	* @param event {Object} Node event
+	* @param task {String} Name of the task that has an error
+	*/
 	function taskOnErrorHandler(event, task)
 	{
 		$("#task-panel .task[data-task='"+task+"']")
@@ -128,9 +172,13 @@ define(function (require, exports, module)
 		});
 	}
 
+	/**
+	* Removes listeners from the current task buttons and then removes them from the panel
+	* Is called when the user switches to another project
+	* @method cleanUpTasks
+	*/
 	function cleanUpTasks()
 	{
-		console.log("Clean up old tasks");
 		$('.task', $tasksPanelContent).unbind('click').remove();
 	}
 });
