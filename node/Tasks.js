@@ -64,11 +64,17 @@ function runTask(task, type)
 
 	gulpTask.task = task;
 	gulpTask.projectPath = projectPath;
+	gulpTask.onLog = onLog;
 	gulpTask.onStart = onStart;
 	gulpTask.onFinish = onFinish;
 	gulpTask.onClose = onClose;
 	gulpTask.onError = onError;
 	gulpTask.start(task, projectPath);
+}
+
+function onLog(message)
+{
+	domainManager.emitEvent("tasks", "log", message);
 }
 
 function onStart(task)
@@ -106,6 +112,7 @@ function init(_domainManager)
 	domainManager.registerCommand('tasks', 'runTask', runTask, false);
 
 	// Register available events
+	domainManager.registerEvent('tasks', 'log');
 	domainManager.registerEvent('tasks', 'start');
 	domainManager.registerEvent('tasks', 'finish');
 	domainManager.registerEvent('tasks', 'close');

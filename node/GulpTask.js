@@ -37,6 +37,7 @@ function onDataHandler(data)
 	{
 		var outputLine = output[i];
 		console.log(i + ": ["+outputLine+"]");
+		exports.onLog(outputLine);
 
 		if(startRegex.test(outputLine))
 		{
@@ -67,6 +68,8 @@ function onClose(task) { }
 
 function onError(task) { }
 
+function onLog(message) { }
+
 exports.start = start;
 exports.kill = kill;
 
@@ -74,3 +77,4 @@ exports.onStart = onStart;
 exports.onFinish = onFinish;
 exports.onClose = onClose;
 exports.onError = onError;
+exports.onLog = onLog;

@@ -27,6 +27,7 @@ define(function (require, exports, module)
 	function init()
 	{
 		tasksDomain = new NodeDomain("tasks", ExtensionUtils.getModulePath(module, "node/Tasks"));
+		$(tasksDomain).on("log", taskOnLogHandler);
 		$(tasksDomain).on("start", taskOnStartHandler);
 		$(tasksDomain).on("finish", taskOnFinishHandler);
 		$(tasksDomain).on("close", taskOnCloseHandler);
@@ -69,6 +70,11 @@ define(function (require, exports, module)
 		tasksDomain.exec('runTask', task);
 		$("#task-panel .task[data-task='"+task+"']")
 		.addClass('task-open');
+	}
+
+	function taskOnLogHandler(message)
+	{
+		$("#task-panel #task-log").append(message + "<br />");
 	}
 
 	function taskOnStartHandler(event, task)

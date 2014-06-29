@@ -36,3 +36,9 @@
 {
 	background-color: #fc3838;
 }
+
+#task-panel #task-log
+{
+	height: 80%;
+	overflow-y: scroll;
+}
