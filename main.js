@@ -27,16 +27,15 @@ define(function (require, exports, module)
 	function init()
 	{
 		tasksDomain = new NodeDomain("tasks", ExtensionUtils.getModulePath(module, "node/Tasks"));
-		$(tasksDomain).on("start", function(event, task){ console.log("START: " + task); });
-		$(tasksDomain).on("finish", function(event, task){ console.log("FINISH: " + task); });
-		$(tasksDomain).on("close", function(event, task){ console.log("CLOSE: " + task); });
-		$(tasksDomain).on("error", function(event, task){ console.log("ERROR: " + task); });
+		$(tasksDomain).on("start", taskOnStartHandler);
+		$(tasksDomain).on("finish", taskOnFinishHandler);
+		$(tasksDomain).on("close", taskOnCloseHandler);
+		$(tasksDomain).on("error", taskOnErrorHandler);
 
 		$(ProjectManager).on("projectOpen", function()
 		{
 			cleanUpTasks();
 			initTasks();
-			tasksDomain.exec('runTask');
 		});
 
 		$tasksPanelContent = $(Mustache.render(TEMPLATE_PANEL, {}));
@@ -56,37 +55,76 @@ define(function (require, exports, module)
 			if(tasks.gulp !== null)
 			{
 				gulpTasks = $(Mustache.render(TEMPLATE_TASK_LIST, tasks.gulp));
-				console.group("GULP TASKS");
-				console.log(tasks.gulp);
-				console.groupEnd();
 			}
 
 			$("#task-list", $tasksPanelContent).append(gulpTasks);
+			$(".task", $tasksPanelContent).click(taskButtonClickHandler);
+
 		});
+	}
+
+	function taskButtonClickHandler()
+	{
+		var task = $(this).data('task');
+		tasksDomain.exec('runTask', task);
+		$("#task-panel .task[data-task='"+task+"']")
+		.addClass('task-open');
 	}
 
 	function taskOnStartHandler(event, task)
 	{
-
+		$("#task-panel .task[data-task='"+task+"']")
+		.addClass('task-start');
 	}
 
 	function taskOnFinishHandler(event, task)
 	{
-
+		$("#task-panel .task[data-task='"+task+"']")
+		.addClass('task-finish')
+		.delay(200)
+		.queue(function(next)
+		{
+			$(this)
+			.removeClass('task-start')
+			.removeClass('task-finish');
+			next();
+		});
 	}
 
 	function taskOnCloseHandler(event, task)
 	{
-
+		$("#task-panel .task[data-task='"+task+"']")
+		.addClass('task-close')
+		.delay(200)
+		.queue(function(next)
+		{
+			$(this)
+			.removeClass('task-open')
+			.removeClass('task-close');
+			next();
+		});
 	}
 
 	function taskOnErrorHandler(event, task)
 	{
-
+		$("#task-panel .task[data-task='"+task+"']")
+		.removeClass('task-open')
+		.removeClass('task-start')
+		.removeClass('task-finish')
+		.removeClass('task-close')
+		.addClass('task-error')
+		.delay(2000)
+		.queue(function(next)
+		{
+			$(this)
+			.removeClass('task-error');
+			next();
+		});
 	}
 
 	function cleanUpTasks()
 	{
 		console.log("Clean up old tasks");
+		$('.task', $tasksPanelContent).unbind('click').remove();
 	}
 });

@@ -1,5 +1,5 @@
 {{#.}}
-	<button type="button" class="btn btn-default" data-task="{{name}}">
+	<button type="button" class="task btn btn-default" data-task="{{name}}">
 	{{name}}
 	</button>
 {{/.}}

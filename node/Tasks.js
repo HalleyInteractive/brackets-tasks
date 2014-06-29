@@ -62,13 +62,13 @@ function runTask(task, type)
 
 	runningTasks.push(gulpTask);
 
-	gulpTask.task = 'test-task';
+	gulpTask.task = task;
 	gulpTask.projectPath = projectPath;
 	gulpTask.onStart = onStart;
 	gulpTask.onFinish = onFinish;
 	gulpTask.onClose = onClose;
 	gulpTask.onError = onError;
-	gulpTask.start('test-task', projectPath);
+	gulpTask.start(task, projectPath);
 }
 
 function onStart(task)
