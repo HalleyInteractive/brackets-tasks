@@ -1,0 +1,4 @@
+<div id="task-panel">
+	<div id="task-list"></div>
+	<div id="task-log"></div>
+</div>

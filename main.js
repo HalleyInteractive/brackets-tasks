@@ -1,5 +1,5 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global $, define, brackets */
+/*global $, define, brackets, Mustache */
 
 define(function (require, exports, module)
 {
@@ -15,7 +15,11 @@ define(function (require, exports, module)
 	/** VARIABLES **/
 	var tasksDomain = null;
 	var tasksPanel = null;
-	var taskButtons = null;
+	var $tasksPanelContent = null;
+
+	/** TEMPLATES **/
+	var TEMPLATE_PANEL = require('text!templates/TasksPanel.template');
+	var TEMPLATE_TASK_LIST = require('text!templates/TaskList.template');
 
 	ExtensionUtils.loadStyleSheet(module, "css/brackets-tasks.css");
 	AppInit.appReady(init);
@@ -34,6 +38,11 @@ define(function (require, exports, module)
 			initTasks();
 			tasksDomain.exec('runTask');
 		});
+
+		$tasksPanelContent = $(Mustache.render(TEMPLATE_PANEL, {}));
+		tasksPanel = PanelManager.createBottomPanel("brackets-tasks", $tasksPanelContent, 50);
+		tasksPanel.show();
+
 		initTasks();
 	}
 
@@ -43,9 +52,37 @@ define(function (require, exports, module)
 		tasksDomain.exec("getTaskList")
 		.done(function(tasks)
 		{
-			console.log("TASK LIST");
-			console.log(tasks);
+			var gulpTasks = '';
+			if(tasks.gulp !== null)
+			{
+				gulpTasks = $(Mustache.render(TEMPLATE_TASK_LIST, tasks.gulp));
+				console.group("GULP TASKS");
+				console.log(tasks.gulp);
+				console.groupEnd();
+			}
+
+			$("#task-list", $tasksPanelContent).append(gulpTasks);
 		});
+	}
+
+	function taskOnStartHandler(event, task)
+	{
+
+	}
+
+	function taskOnFinishHandler(event, task)
+	{
+
+	}
+
+	function taskOnCloseHandler(event, task)
+	{
+
+	}
+
+	function taskOnErrorHandler(event, task)
+	{
+
 	}
 
 	function cleanUpTasks()

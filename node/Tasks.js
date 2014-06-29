@@ -1,5 +1,5 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global require, exports */
+/*global require, exports, $ */
 
 var fs = require('fs');
 
@@ -22,9 +22,16 @@ function getTaskList()
 	var gulpAvailable = fs.existsSync(projectPath + 'gulpfile.js');
 	var gulpFile = gulpAvailable ? require(projectPath + 'gulpfile.js') : null;
 	gulpTaskList = gulpFile !== null ? gulpFile.tasks : null;
-
+	var gulpTaskListArray = [];
+	for(var gulpTask in gulpTaskList)
+	{
+		if(gulpTaskList.hasOwnProperty(gulpTask))
+		{
+			gulpTaskListArray.push(gulpTaskList[gulpTask]);
+		}
+	}
 	var taskList = {
-		gulp: gulpTaskList,
+		gulp: gulpTaskListArray,
 		grunt: gruntTaskList
 	};
 
