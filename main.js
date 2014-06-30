@@ -93,7 +93,11 @@ define(function (require, exports, module)
 	*/
 	function taskOnLogHandler(event, message)
 	{
-		$("#task-panel #task-log").prepend(message + "<br />");
+		var date = new Date();
+		var hours = date.getHours().toString().length === 1 ? "0" + date.getHours().toString() : date.getHours().toString();
+		var minutes = date.getMinutes().toString().length === 1 ? "0" + date.getMinutes().toString() : date.getMinutes().toString();
+		var seconds = date.getSeconds().toString().length === 1 ? "0" + date.getSeconds().toString() : date.getSeconds().toString();
+		$("#task-panel #task-log").prepend("["+hours+":"+minutes+":"+seconds+"] "+message + "<br />");
 	}
 
 	/**
