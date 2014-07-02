@@ -26,6 +26,7 @@ var domainManager = null;
 */
 function getTaskList()
 {
+	// GULP
 	var gulpAvailable = fs.existsSync(projectPath + 'gulpfile.js');
 	var gulpFile = gulpAvailable ? require(projectPath + 'gulpfile.js') : null;
 	gulpTaskList = gulpFile !== null ? gulpFile.tasks : null;
@@ -37,9 +38,64 @@ function getTaskList()
 			gulpTaskListArray.push(gulpTaskList[gulpTask]);
 		}
 	}
+
+	// GRUNT
+	var gruntAvailable = fs.existsSync(projectPath + 'gruntfile.js');
+	var gruntTaskListArray = [];
+	if(gruntAvailable)
+	{
+		console.log("GRUNT AVAILABLE");
+		var gruntfile = require(projectPath + 'gruntfile.js');
+		console.log("GRUNT FILE LOADED");
+		var gruntdummy = require('grunt');
+		console.log("GRUNT LOADED");
+
+		gruntdummy.registerTask = function (alias, taskname)
+		{
+			console.log("REGISTER TASK: " + alias);
+			var task = { name: alias, type: 'alias', taskname: taskname };
+			gruntTaskListArray.push(task);
+		};
+
+		gruntdummy.initConfig = function(config)
+		{
+			console.log("INIT CONFIG");
+			for(var task in config)
+			{
+				if(config.hasOwnProperty(task))
+				{
+					if(task !== 'pkg')
+					{
+						console.log("MAIN TASK: " + task);
+						var maintask = { name: task, type: 'main', taskname: task };
+						gruntTaskListArray.push(maintask);
+						for(var subtask in config[task])
+						{
+							if(config[task].hasOwnProperty(subtask))
+							{
+								if(subtask !== 'options')
+								{
+									console.log("SUB TASK: " + subtask);
+									var mainsubtask = { name: subtask, type: 'sub', taskname: task };
+									gruntTaskListArray.push(mainsubtask);
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+
+		console.log("FUNCTIONS ADDED TO GRUNT");
+		gruntfile(gruntdummy);
+		console.log("GRUNT DUMMY ADDED TO GRUNT");
+	}
+
+	console.log(gruntTaskListArray);
+
 	var taskList = {
 		gulp: gulpTaskListArray,
-		grunt: gruntTaskList
+		grunt: gruntTaskListArray
 	};
 
 	return taskList;
