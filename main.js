@@ -46,7 +46,6 @@ define(function (require, exports, module)
 
 		$tasksPanelContent = $(Mustache.render(TEMPLATE_PANEL, {}));
 		tasksPanel = PanelManager.createBottomPanel("brackets-tasks", $tasksPanelContent, 50);
-		tasksPanel.show();
 
 		initTasks();
 	}
@@ -62,15 +61,23 @@ define(function (require, exports, module)
 		.done(function(tasks)
 		{
 			var gulpTasks = '';
-			if(tasks.gulp !== null)
+			if(tasks.gulp.length > 0)
 			{
 				gulpTasks = $(Mustache.render(TEMPLATE_TASK_LIST_GULP, tasks.gulp));
 			}
 
 			var gruntTasks = '';
-			if(tasks.grunt !== null)
+			if(tasks.grunt.length > 0)
 			{
 				gruntTasks = $(Mustache.render(TEMPLATE_TASK_LIST_GRUNT, tasks.grunt));
+			}
+
+			if(tasks.grunt.length > 0 || tasks.gulp.length > 0)
+			{
+				tasksPanel.show();
+			} else
+			{
+				tasksPanel.hide();
 			}
 
 			$("#task-list", $tasksPanelContent).append(gulpTasks);
