@@ -1,0 +1,5 @@
+{{#.}}
+	<button type="button" class="task btn btn-default grunt {{type}}" data-task="{{name}}">
+	{{name}}
+	</button>
+{{/.}}

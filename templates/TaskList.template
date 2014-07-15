@@ -1,5 +1,0 @@
-{{#.}}
-	<button type="button" class="task btn btn-default" data-task="{{name}}">
-	{{name}}
-	</button>
-{{/.}}

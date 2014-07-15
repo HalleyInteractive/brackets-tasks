@@ -19,7 +19,8 @@ define(function (require, exports, module)
 
 	/** TEMPLATES **/
 	var TEMPLATE_PANEL = require('text!templates/TasksPanel.template');
-	var TEMPLATE_TASK_LIST = require('text!templates/TaskList.template');
+	var TEMPLATE_TASK_LIST_GULP = require('text!templates/TaskListGulp.template');
+	var TEMPLATE_TASK_LIST_GRUNT = require('text!templates/TaskListGrunt.template');
 
 	ExtensionUtils.loadStyleSheet(module, "css/brackets-tasks.css");
 	AppInit.appReady(init);
@@ -63,11 +64,19 @@ define(function (require, exports, module)
 			var gulpTasks = '';
 			if(tasks.gulp !== null)
 			{
-				gulpTasks = $(Mustache.render(TEMPLATE_TASK_LIST, tasks.gulp));
+				gulpTasks = $(Mustache.render(TEMPLATE_TASK_LIST_GULP, tasks.gulp));
+			}
+
+			var gruntTasks = '';
+			if(tasks.grunt !== null)
+			{
+				gruntTasks = $(Mustache.render(TEMPLATE_TASK_LIST_GRUNT, tasks.grunt));
 			}
 
 			$("#task-list", $tasksPanelContent).append(gulpTasks);
-			$(".task", $tasksPanelContent).click(taskButtonClickHandler);
+			$("#task-list", $tasksPanelContent).append(gruntTasks);
+			$(".gulp.task", $tasksPanelContent).click(gulpTaskButtonClickHandler);
+			$(".grunt.task", $tasksPanelContent).click(gruntTaskButtonClickHandler);
 
 		});
 	}
@@ -77,12 +86,23 @@ define(function (require, exports, module)
 	* Starts the task in node
 	* @method taskButtonClickHandler
 	*/
-	function taskButtonClickHandler()
+	function gulpTaskButtonClickHandler()
 	{
 		var task = $(this).data('task');
 		tasksDomain.exec('runTask', task);
 		$("#task-panel .task[data-task='"+task+"']")
 		.addClass('task-open');
+	}
+
+	/**
+	* Fires after user clicks a task button
+	* Starts the task in node
+	* @method taskButtonClickHandler
+	*/
+	function gruntTaskButtonClickHandler()
+	{
+		var task = $(this).data('task');
+		console.log("RUN: " + task);
 	}
 
 	/**
