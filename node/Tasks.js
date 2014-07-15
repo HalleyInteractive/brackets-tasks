@@ -109,18 +109,23 @@ function setProjectPath(path)
 */
 function runTask(task, type)
 {
-	var gulpTask = require('./GulpTask');
+	console.log("NEW TASK TO RUN: " + type);
 
-	runningTasks.push(gulpTask);
+	var newTask = type === 'gulp' ? require('./GulpTask') : require('./GruntTask');
 
-	gulpTask.task = task;
-	gulpTask.projectPath = projectPath;
-	gulpTask.onLog = onLog;
-	gulpTask.onStart = onStart;
-	gulpTask.onFinish = onFinish;
-	gulpTask.onClose = onClose;
-	gulpTask.onError = onError;
-	gulpTask.start(task, projectPath);
+	console.log("Loaded a new grunt task js");
+
+	runningTasks.push(newTask);
+
+	newTask.task = task;
+	newTask.projectPath = projectPath;
+	newTask.onLog = onLog;
+	newTask.onStart = onStart;
+	newTask.onFinish = onFinish;
+	newTask.onClose = onClose;
+	newTask.onError = onError;
+	newTask.start(task, projectPath);
+	console.log("TASK SHOULD BE STARTED");
 }
 
 /**

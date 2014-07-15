@@ -89,9 +89,8 @@ define(function (require, exports, module)
 	function gulpTaskButtonClickHandler()
 	{
 		var task = $(this).data('task');
-		tasksDomain.exec('runTask', task);
-		$("#task-panel .task[data-task='"+task+"']")
-		.addClass('task-open');
+		tasksDomain.exec('runTask', task, 'gulp');
+		$(this).addClass('task-open');
 	}
 
 	/**
@@ -102,7 +101,8 @@ define(function (require, exports, module)
 	function gruntTaskButtonClickHandler()
 	{
 		var task = $(this).data('task');
-		console.log("RUN: " + task);
+		tasksDomain.exec('runTask', task, 'grunt');
+		$(this).addClass('task-open');
 	}
 
 	/**
