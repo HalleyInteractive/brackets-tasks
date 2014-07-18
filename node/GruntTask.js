@@ -49,21 +49,31 @@ function kill()
 function onDataHandler(data)
 {
 	var output = data.toString("utf-8").match(/[^\r\n]+/g);
-	var startRegex = /\[gulp\]\sStarting\s\'([\w-]+)\'/;
-	var finishRegex = /\[gulp\]\sFinished\s\'([\w-]+)\'/;
+	var startRegex = /Running\s\"([\w:]+)\"\s\((\w+)\)\stask/i;
+	var finishRegex = /Done\,\swithout\serrors\./i;
+	var warningRegex = /Aborted\sdue\sto\swarnings\./i;
+	var styleRegexs = [/\\u001b/, /\[\d+m/, /\[\d+m$/];
 
 	for(var i = 0; i < output.length; i++)
 	{
 		var outputLine = output[i];
+
+		for(var sr = 0; sr < styleRegexs.length; sr++)
+		{
+			outputLine = outputLine.replace(styleRegexs[sr], '');
+		}
+
 		console.log(i + ": ["+outputLine+"]");
 		exports.onLog(outputLine);
 
 		if(startRegex.test(outputLine))
 		{
+			console.log("START START START");
 			exports.onStart(startRegex.exec(outputLine)[1]);
 		}
 		if(finishRegex.test(outputLine))
 		{
+			console.log("END END ENDS");
 			exports.onFinish(finishRegex.exec(outputLine)[1]);
 		}
 	}
