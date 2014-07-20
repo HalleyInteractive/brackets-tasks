@@ -49,8 +49,8 @@ function kill()
 function onDataHandler(data)
 {
 	var output = data.toString("utf-8").match(/[^\r\n]+/g);
-	var startRegex = /\[gulp\]\sStarting\s\'([\w-]+)\'/;
-	var finishRegex = /\[gulp\]\sFinished\s\'([\w-]+)\'/;
+	var startRegex = /\[(gulp|\d+\:\d+\:\d+)\]\sStarting\s\'([\w-]+)\'/;
+	var finishRegex = /\[(gulp|\d+\:\d+\:\d+)\]\sFinished\s\'([\w-]+)\'/;
 
 	for(var i = 0; i < output.length; i++)
 	{
@@ -60,11 +60,11 @@ function onDataHandler(data)
 
 		if(startRegex.test(outputLine))
 		{
-			exports.onStart(startRegex.exec(outputLine)[1]);
+			exports.onStart(startRegex.exec(outputLine)[2]);
 		}
 		if(finishRegex.test(outputLine))
 		{
-			exports.onFinish(finishRegex.exec(outputLine)[1]);
+			exports.onFinish(finishRegex.exec(outputLine)[2]);
 		}
 	}
 }
