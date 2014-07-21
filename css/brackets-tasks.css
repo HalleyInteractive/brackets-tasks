@@ -3,6 +3,11 @@
 	padding: 10px;
 }
 
+#task-panel .task.btn
+{
+	margin: 3px;
+}
+
 #task-panel .task.btn-default
 {
 	transition: background-color 200ms linear;
